@@ -52,6 +52,18 @@ func printFencedCodeBlock(code string, language string) (string, bool) {
 	return fmt.Sprintf("`%s`", code), false
 }
 
+func printFencedCodeBlockWithIndent(code string, language string) string {
+	if !strings.Contains(code, "\n") {
+		return fmt.Sprintf("`%s`", code)
+	}
+	block := fmt.Sprintf("```%s\n%s\n```", language, code)
+	lines := strings.Split(block, "\n")
+	for i, l := range lines {
+		lines[i] = "    " + l
+	}
+	return "\n" + strings.Join(lines, "\n") + "\n"
+}
+
 // printFencedAsciidocCodeBlock prints codes in fences, it automatically detects if
 // the input 'code' contains '\n' it will use multi line fence, otherwise it
 // wraps the 'code' inside single-tick block.
@@ -62,4 +74,35 @@ func printFencedAsciidocCodeBlock(code string, language string) (string, bool) {
 		return fmt.Sprintf("\n[source,%s]\n----\n%s\n----\n", language, code), true
 	}
 	return fmt.Sprintf("`%s`", code), false
+}
+
+// convertMultiLineText converts a multi-line text into a suitable Markdown representation.
+func convertMultiLineText(s string, isTable bool) string {
+	if isTable {
+		s = strings.TrimSpace(s)
+	}
+
+	// Convert double newlines to <br><br>.
+	s = strings.Replace(s, "\n\n", "<br><br>", -1)
+
+	// Convert line-break on a non-empty line followed by another line
+	// starting with "alphanumeric" word into space-space-newline
+	// which is a know convention of Markdown for multi-lines paragprah.
+	// This doesn't apply on a markdown list for example, because all the
+	// consecutive lines start with hyphen which is a special character.
+	s = regexp.MustCompile(`(\S*)(\r?\n)(\s*)(\w+)`).ReplaceAllString(s, "$1  $2$3$4")
+	s = strings.Replace(s, "    \n", "  \n", -1)
+	s = strings.Replace(s, "<br>  \n", "\n\n", -1)
+
+	if isTable {
+		// Convert space-space-newline to <br>
+		s = strings.Replace(s, "  \n", "<br>", -1)
+
+		// Convert single newline to <br>.
+		s = strings.Replace(s, "\n", "<br>", -1)
+	} else {
+		s = strings.Replace(s, "<br>", "\n", -1)
+	}
+
+	return s
 }

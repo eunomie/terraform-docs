@@ -12,6 +12,7 @@ package markdown
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/terraform-docs/terraform-docs/cmd/markdown/compact"
 
 	"github.com/terraform-docs/terraform-docs/cmd/markdown/document"
 	"github.com/terraform-docs/terraform-docs/cmd/markdown/table"
@@ -47,6 +48,7 @@ func NewCommand(config *cli.Config) *cobra.Command {
 	// subcommands
 	cmd.AddCommand(document.NewCommand(config))
 	cmd.AddCommand(table.NewCommand(config))
+	cmd.AddCommand(compact.NewCommand(config))
 
 	return cmd
 }
