@@ -49,7 +49,10 @@ func PreRunEFunc(config *Config) func(*cobra.Command, []string) error {
 			return fmt.Errorf("value of '--config' can't be empty")
 		}
 
-		file := filepath.Join(args[0], config.File)
+		file := config.File
+		if !filepath.IsAbs(file) {
+			file, _ = filepath.Abs(file)
+		}
 		cfgreader := &cfgreader{
 			file:   file,
 			config: config,
